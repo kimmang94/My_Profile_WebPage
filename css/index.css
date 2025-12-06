@@ -1,0 +1,29 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+.Nav {
+    /* 1. Flex 컨테이너로 설정 */
+    display: flex;
+    /* 항목들을 가로로 배치 (기본값 row) */
+    flex-direction: row; 
+    /* 항목 사이의 간격을 균등하게 배분하거나 시작점에 모이게 설정할 수 있습니다. */
+    /* 예: justify-content: space-around; */
+    padding: 0; /* ul/ol의 기본 padding 제거 */
+    margin: 0; /* ul/ol의 기본 margin 제거 */
+}
+
+.Nav li {
+    /* 기본 불릿(점) 제거 */
+    list-style: none;
+    /* 항목 간격 조정 (선택 사항) */
+    margin-right: 15px; 
+}
+
+/* <a> 태그 스타일링 (선택 사항) */
+.Nav li a {
+    text-decoration: none; /* 링크 밑줄 제거 */
+    padding: 10px; /* 클릭 영역 확보 */
+    display: block; /* padding 적용을 위해 */
+}
