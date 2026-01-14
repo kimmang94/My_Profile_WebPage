@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>MES Server Monitoring</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="dashboard">
+        <header>
+            <h1>📊 MES System Monitoring</h1>
+            <div id="server-status" class="status-online">Server: Online</div>
+        </header>
+
+        <section class="stats-container">
+            <div class="card">
+                <h3>CPU Usage</h3>
+                <div class="gauge-bar"><div id="cpu-bar" style="width: 30%"></div></div>
+                <p id="cpu-text">30%</p>
+            </div>
+            <div class="card">
+                <h3>Memory</h3>
+                <div class="gauge-bar"><div id="mem-bar" style="width: 55%; background: #e67e22;"></div></div>
+                <p id="mem-text">4.2GB / 8GB</p>
+            </div>
+            <div class="card">
+                <h3>Active Sessions</h3>
+                <p class="big-num" id="session-count">12</p>
+            </div>
+        </section>
+
+        <section class="log-section">
+            <h3>Server Logs (Real-time)</h3>
+            <div id="log-container" class="log-window">
+                </div>
+            <button onclick="clearLogs()">Clear Logs</button>
+        </section>
+    </div>
+    <script src="/js/script.js"></script>
+</body>
+</html>

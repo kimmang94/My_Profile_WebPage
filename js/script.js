@@ -126,3 +126,48 @@ function initPlanForm() {
         });
     }
 }
+
+const logContainer = document.getElementById('log-container');
+
+// 가상의 로그 데이터 생성 함수
+function addLog(type, message) {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString();
+    
+    const logEntry = document.createElement('div');
+    logEntry.className = 'log-entry';
+    logEntry.innerHTML = `
+        <span class="log-time">[${timeStr}]</span>
+        <span class="type-${type.toLowerCase()}">[${type}]</span>
+        <span class="log-msg">${message}</span>
+    `;
+    
+    logContainer.appendChild(logEntry);
+    logContainer.scrollTop = logContainer.scrollHeight; // 자동 스크롤
+}
+
+// 초기 로그 예시
+addLog('INFO', 'MES System Monitoring Started.');
+addLog('INFO', 'Connected to Database: OK');
+
+// 2초마다 랜덤 로그 및 상태 업데이트 시뮬레이션
+setInterval(() => {
+    const events = [
+        {type: 'INFO', msg: 'Production Line #3 data received.'},
+        {type: 'INFO', msg: 'User "admin" logged in.'},
+        {type: 'ERROR', msg: 'Sensor timeout at Station B7.'},
+        {type: 'INFO', msg: 'Batch report generated: #B20240114.'}
+    ];
+    const randomEvent = events[Math.floor(Math.random() * events.length)];
+    addLog(randomEvent.type, randomEvent.msg);
+
+    // 시스템 상태 랜덤 변경
+    const cpu = Math.floor(Math.random() * 100);
+    document.getElementById('cpu-bar').style.width = cpu + '%';
+    document.getElementById('cpu-text').innerText = cpu + '%';
+}, 3000);
+
+function clearLogs() {
+    logContainer.innerHTML = '';
+    addLog('INFO', 'Logs cleared by admin.');
+}
