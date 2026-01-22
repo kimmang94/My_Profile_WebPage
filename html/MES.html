@@ -22,7 +22,10 @@
         <main class="main-content">
             <header>
                 <h1 id="menu-title">대시보드</h1>
-                <div class="user-info">접속자: 관리자(ADMIN) | <span id="current-time"></span></div>
+                <div class="user-info">
+                    <button id="theme-toggle" class="theme-btn">🌙 나이트 모드</button>
+                    접속자: 관리자(ADMIN) | <span id="current-time"></span>
+                </div>
             </header>
 
             <section id="view-dashboard" class="content-view active">
@@ -43,49 +46,40 @@
                 </div>
             </section>
 
-<section id="view-plan" class="content-view">
-    <div class="form-section">
-        <h3>새 생산 지시 등록</h3>
-        <form id="plan-form">
-            <div class="input-group">
-                <input type="text" id="plan-item" placeholder="품목명" required>
-                <input type="number" id="plan-qty" placeholder="계획수량" required>
-                <input type="date" id="plan-date" required>
-                <select id="plan-priority">
-                    <option value="보통">보통</option>
-                    <option value="긴급">긴급</option>
-                    <option value="최우선">최우선</option>
-                </select>
-                <button type="submit" class="btn-primary">계획 등록</button>
-            </div>
-        </form>
-    </div>
-
-    <div class="table-section">
-        <div class="table-header">
-            <h3>주간 생산 지시 현황</h3>
-            <div class="filter-group">
-                <button class="filter-btn active">전체</button>
-                <button class="filter-btn">대기</button>
-                <button class="filter-btn">진행중</button>
-            </div>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>지시번호</th>
-                    <th>품목명</th>
-                    <th>계획수량</th>
-                    <th>마감일자</th>
-                    <th>우선순위</th>
-                    <th>상태</th>
-                </tr>
-            </thead>
-            <tbody id="plan-table-body">
-                </tbody>
-        </table>
-    </div>
-</section>
+            <section id="view-plan" class="content-view">
+                <div class="form-section">
+                    <h3>새 생산 지시 등록</h3>
+                    <form id="plan-form">
+                        <div class="input-group">
+                            <input type="text" id="plan-item" placeholder="품목명" required>
+                            <input type="number" id="plan-qty" placeholder="계획수량" required>
+                            <input type="date" id="plan-date" required>
+                            <select id="plan-priority">
+                                <option value="보통">보통</option>
+                                <option value="긴급">긴급</option>
+                                <option value="최우선">최우선</option>
+                            </select>
+                            <button type="submit" class="btn-primary">계획 등록</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-section">
+                    <div class="table-header">
+                        <h3>주간 생산 지시 현황</h3>
+                        <div class="filter-group">
+                            <button class="filter-btn active">전체</button>
+                            <button class="filter-btn">대기</button>
+                            <button class="filter-btn">진행중</button>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>지시번호</th><th>품목명</th><th>계획수량</th><th>마감일자</th><th>우선순위</th><th>상태</th></tr>
+                        </thead>
+                        <tbody id="plan-table-body"></tbody>
+                    </table>
+                </div>
+            </section>
 
             <section id="view-facility" class="content-view">
                 <div class="facility-grid">

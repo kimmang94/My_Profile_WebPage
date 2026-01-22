@@ -1,6 +1,6 @@
 // 모든 DOM이 로드된 후 실행
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("MES 시스템 로드 완료"); // 브라우저 콘솔(F12)에서 확인용
+    console.log("MES 시스템 로드 완료");
 
     // 초기 함수 호출
     initNavigation();
@@ -8,7 +8,37 @@ document.addEventListener('DOMContentLoaded', () => {
     renderLineStatus();
     renderPlanTable();
     initPlanForm();
+    initThemeMode(); // 🌙 나이트 모드 기능 초기화 추가
 });
+
+// [추가] 0. 나이트 모드 전환 로직
+function initThemeMode() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+
+    // 로컬 스토리지 확인하여 기존 설정 적용
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        body.classList.add('dark-mode');
+        if (themeToggle) themeToggle.innerText = '☀️ 낮 모드';
+    }
+
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            
+            if (body.classList.contains('dark-mode')) {
+                themeToggle.innerText = '☀️ 낮 모드';
+                localStorage.setItem('theme', 'dark');
+                addLog('INFO', '나이트 모드가 활성화되었습니다.');
+            } else {
+                themeToggle.innerText = '🌙 나이트 모드';
+                localStorage.setItem('theme', 'light');
+                addLog('INFO', '라이트 모드가 활성화되었습니다.');
+            }
+        });
+    }
+}
 
 // 1. 메뉴 클릭 시 화면 전환 로직
 function initNavigation() {
@@ -19,26 +49,20 @@ function initNavigation() {
     menuItems.forEach(item => {
         item.addEventListener('click', () => {
             const targetId = item.getAttribute('data-target');
-            console.log("클릭된 메뉴 target:", targetId); // 클릭 확인용
 
-            // 1. 모든 메뉴에서 active 클래스 제거 후 클릭한 메뉴에 추가
             menuItems.forEach(m => m.classList.remove('active'));
             item.classList.add('active');
 
-            // 2. 모든 섹션 숨기기
             views.forEach(v => {
                 v.classList.remove('active');
-                v.style.display = 'none'; // 확실하게 숨김
+                v.style.display = 'none'; 
             });
 
-            // 3. 대상 섹션 보이기
             const targetView = document.getElementById(targetId);
             if (targetView) {
                 targetView.classList.add('active');
-                targetView.style.display = 'block'; // 확실하게 보임
+                targetView.style.display = 'block'; 
                 titleElem.innerText = item.innerText;
-            } else {
-                console.error("해당 ID를 가진 섹션을 찾을 수 없습니다:", targetId);
             }
         });
     });
@@ -123,14 +147,16 @@ function initPlanForm() {
             plans.unshift(newItem);
             renderPlanTable();
             this.reset();
+            addLog('INFO', `새 생산 지시 등록: ${newItem.item}`);
         });
     }
 }
 
-const logContainer = document.getElementById('log-container');
-
-// 가상의 로그 데이터 생성 함수
+// 로그 관련 시스템
 function addLog(type, message) {
+    const logContainer = document.getElementById('log-container');
+    if (!logContainer) return;
+
     const now = new Date();
     const timeStr = now.toLocaleTimeString();
     
@@ -143,12 +169,8 @@ function addLog(type, message) {
     `;
     
     logContainer.appendChild(logEntry);
-    logContainer.scrollTop = logContainer.scrollHeight; // 자동 스크롤
+    logContainer.scrollTop = logContainer.scrollHeight;
 }
-
-// 초기 로그 예시
-addLog('INFO', 'MES System Monitoring Started.');
-addLog('INFO', 'Connected to Database: OK');
 
 // 2초마다 랜덤 로그 및 상태 업데이트 시뮬레이션
 setInterval(() => {
@@ -161,13 +183,12 @@ setInterval(() => {
     const randomEvent = events[Math.floor(Math.random() * events.length)];
     addLog(randomEvent.type, randomEvent.msg);
 
-    // 시스템 상태 랜덤 변경
-    const cpu = Math.floor(Math.random() * 100);
-    document.getElementById('cpu-bar').style.width = cpu + '%';
-    document.getElementById('cpu-text').innerText = cpu + '%';
+    // CPU 바 업데이트 시뮬레이션 (요소가 있는 경우만)
+    const cpuBar = document.getElementById('cpu-bar');
+    const cpuText = document.getElementById('cpu-text');
+    if (cpuBar && cpuText) {
+        const cpu = Math.floor(Math.random() * 100);
+        cpuBar.style.width = cpu + '%';
+        cpuText.innerText = cpu + '%';
+    }
 }, 3000);
-
-function clearLogs() {
-    logContainer.innerHTML = '';
-    addLog('INFO', 'Logs cleared by admin.');
-}
