@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Factory MES</title>
+    <title>Smart Factory MES Pro</title>
     <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
@@ -12,21 +13,35 @@
             <h2>MES SYSTEM</h2>
             <ul id="menu-list">
                 <li class="active" data-target="view-dashboard">대시보드</li>
+                <li data-target="view-process">공정관리(WIP)</li>
                 <li data-target="view-plan">생산계획</li>
                 <li data-target="view-facility">설비관리</li>
                 <li data-target="view-quality">품질관리</li>
+                <li data-target="view-analysis">분석리포트</li>
                 <li data-target="view-stock">재고현황</li>
             </ul>
         </nav>
 
         <main class="main-content">
             <header>
-                <h1 id="menu-title">대시보드</h1>
+                <div class="header-left">
+                    <h1 id="menu-title">대시보드</h1>
+                </div>
                 <div class="user-info">
+                    <div class="notification-bell">
+                        🔔<span class="badge">3</span>
+                    </div>
                     <button id="theme-toggle" class="theme-btn">🌙 나이트 모드</button>
                     접속자: 관리자(ADMIN) | <span id="current-time"></span>
                 </div>
             </header>
+
+            <div class="alert-banner" id="alert-system">
+                <span class="alert-icon">⚠️</span>
+                <marquee behavior="scroll" direction="left">
+                    [긴급] 컨베이어 벨트 #3 모터 과열 감지 (에러코드: ERR-404) | [알림] 금일 생산 목표 달성률 74% 돌파
+                </marquee>
+            </div>
 
             <section id="view-dashboard" class="content-view active">
                 <div class="dashboard-cards">
@@ -35,19 +50,40 @@
                     <div class="card"><h3>가동률</h3><p class="value" style="color: #2ecc71;">94.2%</p></div>
                     <div class="card"><h3>불량건수</h3><p class="value" style="color: #e74c3c;">3</p></div>
                 </div>
-                <div class="table-section">
-                    <h3>실시간 라인 가동 현황</h3>
-                    <table>
-                        <thead>
-                            <tr><th>라인명</th><th>상태</th><th>가동시간</th><th>목표</th><th>실적</th></tr>
-                        </thead>
-                        <tbody id="line-table"></tbody>
-                    </table>
+                <div class="grid-layout">
+                    <div class="chart-container card">
+                        <h3>시간별 생산 추이</h3>
+                        <canvas id="productionChart"></canvas>
+                    </div>
+                    <div class="table-section card">
+                        <h3>실시간 라인 가동 현황</h3>
+                        <table>
+                            <thead>
+                                <tr><th>라인명</th><th>상태</th><th>가동시간</th><th>실적</th></tr>
+                            </thead>
+                            <tbody id="line-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-process" class="content-view">
+                <div class="process-flow card">
+                    <h3>현재 공정별 재고(WIP) 현황</h3>
+                    <div class="flow-steps">
+                        <div class="step active">원자재 투입<br><strong>500</strong></div>
+                        <div class="arrow">➡</div>
+                        <div class="step active">사출/가공<br><strong>120</strong></div>
+                        <div class="arrow">➡</div>
+                        <div class="step">검사/테스트<br><strong>45</strong></div>
+                        <div class="arrow">➡</div>
+                        <div class="step">포장/출고<br><strong>1,200</strong></div>
+                    </div>
                 </div>
             </section>
 
             <section id="view-plan" class="content-view">
-                <div class="form-section">
+                <div class="form-section card">
                     <h3>새 생산 지시 등록</h3>
                     <form id="plan-form">
                         <div class="input-group">
@@ -57,24 +93,15 @@
                             <select id="plan-priority">
                                 <option value="보통">보통</option>
                                 <option value="긴급">긴급</option>
-                                <option value="최우선">최우선</option>
                             </select>
-                            <button type="submit" class="btn-primary">계획 등록</button>
+                            <button type="submit" class="btn-primary">등록</button>
                         </div>
                     </form>
                 </div>
-                <div class="table-section">
-                    <div class="table-header">
-                        <h3>주간 생산 지시 현황</h3>
-                        <div class="filter-group">
-                            <button class="filter-btn active">전체</button>
-                            <button class="filter-btn">대기</button>
-                            <button class="filter-btn">진행중</button>
-                        </div>
-                    </div>
+                <div class="table-section card" style="margin-top:20px;">
                     <table>
                         <thead>
-                            <tr><th>지시번호</th><th>품목명</th><th>계획수량</th><th>마감일자</th><th>우선순위</th><th>상태</th></tr>
+                            <tr><th>지시번호</th><th>품목명</th><th>수량</th><th>마감일</th><th>우선순위</th><th>상태</th></tr>
                         </thead>
                         <tbody id="plan-table-body"></tbody>
                     </table>
@@ -83,41 +110,15 @@
 
             <section id="view-facility" class="content-view">
                 <div class="facility-grid">
-                    <div class="fac-card on"><h4>사출 성형기 #1</h4><p>상태: 정상 가동중</p><p>최근 점검일: 2024-05-01</p></div>
-                    <div class="fac-card on"><h4>CNC 가공기 #A</h4><p>상태: 정상 가동중</p><p>최근 점검일: 2024-05-10</p></div>
-                    <div class="fac-card off"><h4>컨베이어 벨트 #3</h4><p>상태: 점검 필요 (모터 과열)</p><p>에러코드: ERR-404</p></div>
+                    <div class="fac-card on"><h4>사출 성형기 #1</h4><p>상태: 정상</p></div>
+                    <div class="fac-card off"><h4>컨베이어 #3</h4><p>상태: 점검필요</p></div>
                 </div>
             </section>
 
-            <section id="view-quality" class="content-view">
-                <div class="table-section">
-                    <h3>최근 불량 검출 이력</h3>
-                    <table>
-                        <thead>
-                            <tr><th>검측ID</th><th>발생시간</th><th>공정</th><th>불량유형</th><th>판정</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>QC-992</td><td>14:05:22</td><td>조립공정</td><td>스크래치</td><td><span class="badge bg-red">불합격</span></td></tr>
-                            <tr><td>QC-991</td><td>13:40:10</td><td>가공공정</td><td>치수오차</td><td><span class="badge bg-orange">재작업</span></td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+            <section id="view-quality" class="content-view"><div class="card"><h3>품질 검사 이력 준비 중...</h3></div></section>
+            <section id="view-analysis" class="content-view"><div class="card"><h3>데이터 분석 리포트 준비 중...</h3></div></section>
+            <section id="view-stock" class="content-view"><div class="card"><h3>자재 재고 현황 준비 중...</h3></div></section>
 
-            <section id="view-stock" class="content-view">
-                <div class="table-section">
-                    <h3>자재 재고 상태</h3>
-                    <table>
-                        <thead>
-                            <tr><th>자재코드</th><th>자재명</th><th>단위</th><th>재고량</th><th>상태</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>MAT-01</td><td>실리콘 시트</td><td>EA</td><td>5,200</td><td><span class="badge bg-green">충분</span></td></tr>
-                            <tr><td>MAT-05</td><td>접착 가스켓</td><td>Roll</td><td>12</td><td><span class="badge bg-red">부족</span></td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
         </main>
     </div>
     <script src="/js/script.js"></script>

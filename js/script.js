@@ -8,39 +8,15 @@ document.addEventListener('DOMContentLoaded', () => {
     renderLineStatus();
     renderPlanTable();
     initPlanForm();
-    initThemeMode(); // 🌙 나이트 모드 기능 초기화 추가
+    initThemeMode();
+    
+    // 신규 추가 기능 초기화
+    initProductionChart(); // 📊 차트
+    updateProcessWIP();    // 🔄 공정현황 데이터
+    initAlertSystem();     // ⚠️ 알림바 제어
 });
 
-// [추가] 0. 나이트 모드 전환 로직
-function initThemeMode() {
-    const themeToggle = document.getElementById('theme-toggle');
-    const body = document.body;
-
-    // 로컬 스토리지 확인하여 기존 설정 적용
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-        body.classList.add('dark-mode');
-        if (themeToggle) themeToggle.innerText = '☀️ 낮 모드';
-    }
-
-    if (themeToggle) {
-        themeToggle.addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
-            
-            if (body.classList.contains('dark-mode')) {
-                themeToggle.innerText = '☀️ 낮 모드';
-                localStorage.setItem('theme', 'dark');
-                addLog('INFO', '나이트 모드가 활성화되었습니다.');
-            } else {
-                themeToggle.innerText = '🌙 나이트 모드';
-                localStorage.setItem('theme', 'light');
-                addLog('INFO', '라이트 모드가 활성화되었습니다.');
-            }
-        });
-    }
-}
-
-// 1. 메뉴 클릭 시 화면 전환 로직
+// 1. 메뉴 클릭 시 화면 전환 로직 (클릭 이슈 해결 버전)
 function initNavigation() {
     const menuItems = document.querySelectorAll('#menu-list li');
     const views = document.querySelectorAll('.content-view');
@@ -49,26 +25,109 @@ function initNavigation() {
     menuItems.forEach(item => {
         item.addEventListener('click', () => {
             const targetId = item.getAttribute('data-target');
+            if (!targetId) return;
 
+            // 메뉴 활성화 상태 변경
             menuItems.forEach(m => m.classList.remove('active'));
             item.classList.add('active');
 
+            // 모든 뷰 숨기기 (애니메이션과 충돌 방지 위해 display 속성 초기화)
             views.forEach(v => {
                 v.classList.remove('active');
                 v.style.display = 'none'; 
             });
 
+            // 선택한 뷰 보이기
             const targetView = document.getElementById(targetId);
             if (targetView) {
                 targetView.classList.add('active');
                 targetView.style.display = 'block'; 
                 titleElem.innerText = item.innerText;
+                
+                // 차트가 있는 대시보드로 복귀 시 차트 리사이즈 (크기 깨짐 방지)
+                if (targetId === 'view-dashboard') {
+                    const chartInstance = Chart.getChart("productionChart");
+                    if (chartInstance) chartInstance.resize();
+                }
+            } else {
+                console.error(`ID가 ${targetId}인 섹션을 찾을 수 없습니다.`);
             }
         });
     });
 }
 
-// 2. 실시간 시계 및 데이터 업데이트
+// 2. [추가] 실시간 생산 추이 차트 (Chart.js)
+function initProductionChart() {
+    const ctx = document.getElementById('productionChart');
+    if (!ctx) return;
+
+    const prodChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['09시', '10시', '11시', '12시', '13시', '14시', '15시'],
+            datasets: [{
+                label: '실시간 생산량',
+                data: [150, 230, 180, 290, 200, 250, 184],
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+        }
+    });
+}
+
+// 3. [추가] 공정 관리(WIP) 수치 실시간 업데이트
+function updateProcessWIP() {
+    const steps = document.querySelectorAll('.step strong');
+    if (steps.length === 0) return;
+
+    setInterval(() => {
+        steps.forEach(step => {
+            let currentWIP = parseInt(step.innerText.replace(/,/g, ''));
+            let change = Math.floor(Math.random() * 5) - 2; // -2 ~ +2 변동
+            step.innerText = Math.max(0, currentWIP + change).toLocaleString();
+        });
+    }, 4000);
+}
+
+// 4. [추가] 알림 배너 마우스 제어
+function initAlertSystem() {
+    const banner = document.querySelector('.alert-banner marquee');
+    if (banner) {
+        banner.addEventListener('mouseover', () => banner.stop());
+        banner.addEventListener('mouseout', () => banner.start());
+    }
+}
+
+// --- 이하 기존 로직 유지 (실시간 시계, 테마, 폼 등) ---
+
+function initThemeMode() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const savedTheme = localStorage.getItem('theme');
+    
+    if (savedTheme === 'dark') {
+        body.classList.add('dark-mode');
+        if (themeToggle) themeToggle.innerText = '☀️ 낮 모드';
+    }
+
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            const isDark = body.classList.contains('dark-mode');
+            themeToggle.innerText = isDark ? '☀️ 낮 모드' : '🌙 나이트 모드';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            addLog('INFO', `${isDark ? '나이트' : '라이트'} 모드가 활성화되었습니다.`);
+        });
+    }
+}
+
 function initRealtimeFeatures() {
     const timeElem = document.getElementById('current-time');
     const prodElem = document.getElementById('realtime-prod');
@@ -86,14 +145,12 @@ function initRealtimeFeatures() {
     }, 1000);
 }
 
-// 3. 대시보드 라인 데이터 렌더링
 function renderLineStatus() {
     const lines = [
         { name: "1호 라인", status: "가동중", time: "08:22:10", target: 800, actual: 750 },
         { name: "2호 라인", status: "가동중", time: "10:15:45", target: 800, actual: 620 },
         { name: "3호 라인", status: "비가동", time: "00:00:00", target: 500, actual: 0 }
     ];
-
     const tableBody = document.getElementById('line-table');
     if (tableBody) {
         tableBody.innerHTML = lines.map(line => `
@@ -107,12 +164,6 @@ function renderLineStatus() {
         `).join('');
     }
 }
-
-// 4. 생산 계획 데이터 및 렌더링
-let plans = [
-    { id: 'PLN-20260113-01', item: 'CPU 쿨러 팬', qty: 10000, date: '2026-01-20', priority: '긴급', status: '진행중' },
-    { id: 'PLN-20260113-02', item: '알루미늄 방열판', qty: 5000, date: '2026-01-22', priority: '보통', status: '대기' }
-];
 
 function renderPlanTable() {
     const tbody = document.getElementById('plan-table-body');
@@ -130,7 +181,6 @@ function renderPlanTable() {
     }
 }
 
-// 5. 폼 등록 이벤트
 function initPlanForm() {
     const form = document.getElementById('plan-form');
     if (form) {
@@ -152,43 +202,13 @@ function initPlanForm() {
     }
 }
 
-// 로그 관련 시스템
 function addLog(type, message) {
     const logContainer = document.getElementById('log-container');
     if (!logContainer) return;
-
     const now = new Date();
-    const timeStr = now.toLocaleTimeString();
-    
     const logEntry = document.createElement('div');
     logEntry.className = 'log-entry';
-    logEntry.innerHTML = `
-        <span class="log-time">[${timeStr}]</span>
-        <span class="type-${type.toLowerCase()}">[${type}]</span>
-        <span class="log-msg">${message}</span>
-    `;
-    
+    logEntry.innerHTML = `<span class="log-time">[${now.toLocaleTimeString()}]</span> <span class="type-${type.toLowerCase()}">[${type}]</span> <span class="log-msg">${message}</span>`;
     logContainer.appendChild(logEntry);
     logContainer.scrollTop = logContainer.scrollHeight;
 }
-
-// 2초마다 랜덤 로그 및 상태 업데이트 시뮬레이션
-setInterval(() => {
-    const events = [
-        {type: 'INFO', msg: 'Production Line #3 data received.'},
-        {type: 'INFO', msg: 'User "admin" logged in.'},
-        {type: 'ERROR', msg: 'Sensor timeout at Station B7.'},
-        {type: 'INFO', msg: 'Batch report generated: #B20240114.'}
-    ];
-    const randomEvent = events[Math.floor(Math.random() * events.length)];
-    addLog(randomEvent.type, randomEvent.msg);
-
-    // CPU 바 업데이트 시뮬레이션 (요소가 있는 경우만)
-    const cpuBar = document.getElementById('cpu-bar');
-    const cpuText = document.getElementById('cpu-text');
-    if (cpuBar && cpuText) {
-        const cpu = Math.floor(Math.random() * 100);
-        cpuBar.style.width = cpu + '%';
-        cpuText.innerText = cpu + '%';
-    }
-}, 3000);
